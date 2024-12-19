@@ -1,6 +1,7 @@
 import User from "../models/user.models.js";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
+import Message from "../models/messages.models.js";
 
 //UPDATE USER
 const updateUser = asyncHandler(async (req, res) => {
@@ -56,5 +57,58 @@ const getAllUsers = asyncHandler(async (req, res) => {
     res.status(200).json(users);
   }
 });
+const createMessage = asyncHandler(async (req, res) => {
+  const { email, sujet, message } = req.body;
 
-export { getAllUsers, getUser, updateUser, deleteUser };
+  if (!email || !sujet || !message) {
+    return res.status(400).json({
+      success: false,
+      message: "email, sujet and message are required.",
+    });
+  }
+
+  try {
+    const newMessage = new Message({ email, sujet, message });
+    const savedMessage = await newMessage.save(); // Renamed from 'message' to 'savedMessage'
+
+    return res.status(201).json({
+      success: true,
+      message: "Message created successfully.",
+      data: savedMessage, // Adjusted property name
+    });
+  } catch (error) {
+    console.error("Error creating message:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error. Unable to create message.",
+    });
+  }
+});
+const getMessages = asyncHandler(async (req, res) => {
+  const messages = await Message.find();
+  if (!messages) {
+    res.status(400);
+    throw new Error("Messages were not fetched ");
+  } else {
+    res.status(200).json(messages);
+  }
+});
+//DELETE PRODUCT
+const deleteMessage = asyncHandler(async (req, res) => {
+  const message = await Message.findByIdAndDelete(req.params.id);
+  if (!message) {
+    res.status(400);
+    throw new Error("Message was not deleted");
+  } else {
+    res.status(201).json("Message deleted successfully");
+  }
+});
+export {
+  getAllUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  createMessage,
+  getMessages,
+  deleteMessage,
+};

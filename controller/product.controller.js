@@ -96,26 +96,32 @@ const getProduct = asyncHandler(async (req, res) => {
 
 // GET ALL PRODUCTS
 const getALLproducts = asyncHandler(async (req, res) => {
-  const qNew = req.query.new;
-  const qCategory = req.query.category;
-  const qsearch = req.query.search;
-  let products;
-  if (qNew) {
-    products = await Product.find().sort({ createdAt: -1 });
-  } else if (qCategory) {
-    products = await Product.find({ categories: { $in: [qCategory] } });
-  } else if (qsearch) {
-    products = await Product.find({
-      $text: {
-        $search: qsearch,
-        $caseSensitive: false,
-        $dicriticSensitive: false,
-      },
-    });
-  } else {
-    products = await Product.find().sort({ createdAt: -1 });
-    res.status(200).json(products);
-  }
+  // Fetch all products without filtering
+  let products = await Product.find();
+
+  // Helper function to calculate the average rating for a product
+  const getAverageRating = async (productId) => {
+    const reviews = await Review.find({ productId });
+    if (reviews.length === 0) return 0;
+    const totalRating = reviews.reduce(
+      (acc, review) => acc + (review.note || 0),
+      0
+    );
+    return totalRating / reviews.length;
+  };
+
+  // Enrich products with their average ratings
+  const productsWithRatings = await Promise.all(
+    products.map(async (product) => {
+      const averageRating = await getAverageRating(product._id);
+      return { ...product.toObject(), averageRating };
+    })
+  );
+
+  // Sort the products by their average ratings (in descending order)
+  productsWithRatings.sort((a, b) => b.averageRating - a.averageRating);
+
+  res.status(200).json(productsWithRatings);
 });
 
 // RATING PRODUCTS
@@ -190,6 +196,40 @@ const getReviewsByProduct = asyncHandler(async (req, res) => {
   });
 });
 
+const getAllReviews = asyncHandler(async (req, res) => {
+  // Retrieve all reviews and populate the product name
+  const reviews = await Review.find()
+    .populate({
+      path: "productId", // Reference to the Product model
+      select: "title", // Select only the 'name' field from the Product model
+    })
+    .sort({ createdAt: -1 }); // Sort by most recent review first
+
+  // Transform the response to include the product name
+  const formattedReviews = reviews.map((review) => ({
+    _id: review._id,
+    name: review.name,
+    email: review.email,
+    review: review.review,
+    note: review.note,
+    productName: review.productId?.title || "Unknown Product", // Handle cases where the product might not exist
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+  }));
+
+  res.status(200).json(res.status(200).json(formattedReviews));
+});
+
+//DELETE Review
+const deleteReview = asyncHandler(async (req, res) => {
+  const reveiw = await Review.findByIdAndDelete(req.params.id);
+  if (!reveiw) {
+    res.status(400);
+    throw new Error("reveiw was not deleted");
+  } else {
+    res.status(201).json("Reveiw deleted successfully");
+  }
+});
 export {
   ratingProduct,
   getALLproducts,
@@ -198,4 +238,6 @@ export {
   updateProduct,
   deleteProduct,
   getReviewsByProduct,
+  getAllReviews,
+  deleteReview,
 };

@@ -27,7 +27,7 @@ const ReviewSchema = new mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Product", // Assuming you have a Product model
+      ref: "Product", // Must match the model name in `mongoose.model("Product", ProductSchema)`
     },
   },
   {

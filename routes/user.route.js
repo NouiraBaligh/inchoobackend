@@ -6,6 +6,9 @@ import {
   getUser,
   updateUser,
   deleteUser,
+  createMessage,
+  getMessages,
+  deleteMessage,
 } from "../controller/user.controller.js";
 
 // GET ALL USERS ROUTE
@@ -16,5 +19,9 @@ router.delete("/:id", deleteUser);
 router.put("/:id", updateUser);
 // GET ONE USER
 router.get("/find/:userId", getUser);
+
+router.post("/createMsg", createMessage);
+router.get("/messages", getMessages);
+router.delete("/messages/:id", deleteMessage);
 
 export default router;
