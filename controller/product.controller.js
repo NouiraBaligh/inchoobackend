@@ -217,7 +217,7 @@ const getAllReviews = asyncHandler(async (req, res) => {
     updatedAt: review.updatedAt,
   }));
 
-  res.status(200).json(res.status(200).json(formattedReviews));
+  res.status(200).json(formattedReviews);
 });
 
 //DELETE Review
