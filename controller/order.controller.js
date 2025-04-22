@@ -90,10 +90,11 @@ const getUserOrder = asyncHandler(async (req, res) => {
 
 // GET ALL ORDERS
 const getAllOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find();
-  if (!orders) {
+  const orders = await Order.find().sort({ createdAt: -1 }); // Sort by latest created
+
+  if (!orders || orders.length === 0) {
     res.status(400);
-    throw new Error("No order was found or something went wrong");
+    throw new Error("No orders found or something went wrong");
   } else {
     res.status(200).json(orders);
   }

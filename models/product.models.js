@@ -22,15 +22,13 @@ const ProductSchema = mongoose.Schema(
     category: {
       type: String,
       enum: [
-        "Produits peau",
-        "Produits visage",
-        "Produits intimes",
-        "Produits capillaires",
-        "Produits de rasage",
-        "Produits d'hygiène et de bien être",
-        "Bakhour",
-        "Packs",
-        "Coffrets",
+        "SOINS DE PEAU",
+        "SOINS DE VISAGE",
+        "SOINS CAPILLAIRES",
+        "PARFUMS MAISON",
+        "PARFUMS CHEVEUX ET CORPS",
+        "PACKS",
+        "ACCESOIRES",
       ],
     },
     inStock: {
